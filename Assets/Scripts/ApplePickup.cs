@@ -7,21 +7,21 @@ namespace AppleRest
     {
         [SerializeField] private AppleCollection collection;
         private bool collected;
+        public bool IsAvailable => isActiveAndEnabled && !collected && collection != null && !collection.IsComplete;
 
-        private void OnTriggerEnter(Collider other)
+        // Collection is requested by the nearest-apple E interaction, never by touching the trigger.
+        public bool TryPickup(AppleRestPlayer player)
         {
-            if (collected || collection == null) return;
-            AppleRestPlayer player = other.GetComponentInParent<AppleRestPlayer>();
-            if (player == null) return;
+            if (!IsAvailable || player == null || !player.isActiveAndEnabled) return false;
             collected = true;
             if (!collection.TryCollect(this, player))
             {
                 collected = false;
-                return;
+                return false;
             }
-            // Disable immediately; Destroy is deferred until the end of the frame.
             gameObject.SetActive(false);
             Destroy(gameObject);
+            return true;
         }
     }
 }
